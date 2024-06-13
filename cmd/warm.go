@@ -41,7 +41,15 @@ to quickly create a Cobra application.`,
 
 		domain := parts[2]
 
-		c := colly.NewCollector()
+		c := colly.NewCollector(
+			colly.AllowedDomains(domain),
+			colly.UserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"),
+		)
+
+		c.OnRequest(func(r *colly.Request) {
+			r.Headers.Add("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+			r.Headers.Add("accept-encoding", "gzip, deflate, br")
+		})
 
 		c.OnXML("//loc", func(e *colly.XMLElement) {
 			c.Visit(e.Text)
@@ -49,7 +57,7 @@ to quickly create a Cobra application.`,
 
 		c.OnResponse(func(r *colly.Response) {
 			if !strings.HasSuffix(r.Request.URL.RequestURI(), ".xml") {
-				fmt.Println("Caching https://" + domain + r.Request.URL.Path)
+				fmt.Println("Caching " + r.Request.URL.String())
 			}
 		})
 
