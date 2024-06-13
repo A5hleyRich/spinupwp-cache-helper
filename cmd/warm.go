@@ -4,7 +4,6 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/gocolly/colly"
@@ -41,7 +40,7 @@ var warmCmd = &cobra.Command{
 
 		c.OnResponse(func(r *colly.Response) {
 			if !strings.HasSuffix(r.Request.URL.RequestURI(), ".xml") {
-				fmt.Println("Caching " + r.Request.URL.String())
+				color.Println("<note>✓</> " + r.Request.URL.String())
 			}
 		})
 
