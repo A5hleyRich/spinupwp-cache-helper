@@ -5,8 +5,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/gocolly/colly"
@@ -14,32 +12,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// warmCmd represents the warm command
+var purgeFlag bool
+
 var warmCmd = &cobra.Command{
 	Use:   "warm",
-	Short: "Warm a site's page cache",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Warm the site's page cache",
+	Long:  "Warm the site's page cache",
 	Run: func(cmd *cobra.Command, args []string) {
-		dir, err := os.Getwd()
+		domain := CurrentDomain()
 
-		if err != nil {
-			color.Error.Println(err.Error())
-			os.Exit(1)
+		if purgeFlag {
+			PurgeCache(domain)
 		}
-
-		parts := strings.Split(dir, string(filepath.Separator))
-
-		if !strings.HasPrefix(dir, "/sites") || len(parts) < 2 {
-			color.Warn.Tips("This does not seem to be a SpinupWP site")
-			os.Exit(1)
-		}
-
-		domain := parts[2]
 
 		c := colly.NewCollector(
 			colly.AllowedDomains(domain),
@@ -69,4 +53,6 @@ to quickly create a Cobra application.`,
 
 func init() {
 	rootCmd.AddCommand(warmCmd)
+
+	warmCmd.Flags().BoolVar(&purgeFlag, "purge", false, "purge the cache before warming")
 }
