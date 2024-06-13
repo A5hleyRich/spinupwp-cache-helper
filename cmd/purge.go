@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	"fmt"
 	"net"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/gookit/color"
 	"github.com/spf13/cobra"
 )
 
@@ -30,14 +30,14 @@ to quickly create a Cobra application.`,
 		dir = "/sites/ashleyrich.com/"
 
 		if err != nil {
-			fmt.Println("Error:", err)
+			color.Error.Println(err.Error())
 			os.Exit(1)
 		}
 
 		parts := strings.Split(dir, string(filepath.Separator))
 
 		if !strings.HasPrefix(dir, "/sites") || len(parts) < 2 {
-			fmt.Println("This is not a site")
+			color.Warn.Tips("This does not seem to be a SpinupWP site")
 			os.Exit(1)
 		}
 
@@ -46,25 +46,25 @@ to quickly create a Cobra application.`,
 		tcpServer, err := net.ResolveTCPAddr(TYPE, HOST+":"+PORT)
 
 		if err != nil {
-			println("ResolveTCPAddr failed:", err.Error())
+			color.Error.Println(err.Error())
 			os.Exit(1)
 		}
 
 		conn, err := net.DialTCP(TYPE, nil, tcpServer)
 
 		if err != nil {
-			println("Dial failed:", err.Error())
+			color.Error.Println(err.Error())
 			os.Exit(1)
 		}
 
 		_, err = conn.Write([]byte("/cache/" + domain))
 
 		if err != nil {
-			println("Write data failed:", err.Error())
+			color.Error.Println(err.Error())
 			os.Exit(1)
 		}
 
-		fmt.Println(domain)
+		color.Info.Tips("Cache purged for " + domain)
 
 	},
 }
