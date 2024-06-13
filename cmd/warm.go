@@ -1,24 +1,23 @@
+/*
+Copyright © 2024 NAME HERE <EMAIL ADDRESS>
+*/
 package cmd
 
 import (
-	"net"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/gocolly/colly"
 	"github.com/gookit/color"
 	"github.com/spf13/cobra"
 )
 
-const (
-	HOST = "localhost"
-	PORT = "7836"
-	TYPE = "tcp"
-)
-
-var purgeCmd = &cobra.Command{
-	Use:   "purge",
-	Short: "Purge a site's page cache",
+// warmCmd represents the warm command
+var warmCmd = &cobra.Command{
+	Use:   "warm",
+	Short: "Warm a site's page cache",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 
@@ -42,32 +41,24 @@ to quickly create a Cobra application.`,
 
 		domain := parts[2]
 
-		tcpServer, err := net.ResolveTCPAddr(TYPE, HOST+":"+PORT)
+		c := colly.NewCollector()
 
-		if err != nil {
-			color.Error.Println(err.Error())
-			os.Exit(1)
-		}
+		c.OnXML("//loc", func(e *colly.XMLElement) {
+			c.Visit(e.Text)
+		})
 
-		conn, err := net.DialTCP(TYPE, nil, tcpServer)
+		c.OnResponse(func(r *colly.Response) {
+			if !strings.HasSuffix(r.Request.URL.RequestURI(), ".xml") {
+				fmt.Println("Caching https://" + domain + r.Request.URL.Path)
+			}
+		})
 
-		if err != nil {
-			color.Error.Println(err.Error())
-			os.Exit(1)
-		}
+		c.Visit("https://" + domain + "/wp-sitemap.xml")
 
-		_, err = conn.Write([]byte("/cache/" + domain))
-
-		if err != nil {
-			color.Error.Println(err.Error())
-			os.Exit(1)
-		}
-
-		color.Info.Tips("Cache purged for " + domain)
-
+		color.Info.Tips("Cache warmed for " + domain)
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(purgeCmd)
+	rootCmd.AddCommand(warmCmd)
 }
