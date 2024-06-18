@@ -8,7 +8,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var purgeFlag bool
+var (
+	purgeFlag   bool
+	sitemapFlag string
+)
 
 var warmCmd = &cobra.Command{
 	Use:   "warm",
@@ -41,7 +44,7 @@ var warmCmd = &cobra.Command{
 			}
 		})
 
-		c.Visit("https://" + domain + "/wp-sitemap.xml")
+		c.Visit("https://" + domain + "/" + sitemapFlag)
 
 		color.Info.Tips("Cache warmed for " + domain)
 	},
@@ -51,4 +54,5 @@ func init() {
 	rootCmd.AddCommand(warmCmd)
 
 	warmCmd.Flags().BoolVar(&purgeFlag, "purge", false, "purge the cache before warming")
+	warmCmd.Flags().StringVar(&sitemapFlag, "sitemap", "wp-sitemap.xml", "location of the sitemap")
 }
